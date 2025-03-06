@@ -3,10 +3,11 @@ import json
 import sys
 import time
 import itertools
+from modulo_reporte import ingreso_de_datos
 
 def loading_animation(text="Procesando..."):
                 animation = itertools.cycle(["🃟","🂠","🃑","🃛","🃜","🃝","🃞","🃁","🃋","🃌","🃍","🃎","🂡","🂫","🂬","🂭","🂮","🂱","🂻","🂼","🂽","🂾", "\\"])
-                for _ in range(10):  # Ajusta el rango para cambiar la duración
+                for _ in range(15):  # Ajusta el rango para cambiar la duración
                     sys.stdout.write(f"\r{text} {next(animation)} ")
                     sys.stdout.flush()
                     time.sleep(0.1)
@@ -27,7 +28,7 @@ def leer_json(nombre_archivo):
         with open(nombre_archivo, "r", encoding='utf-8') as archivo:
             return json.load(archivo)
     except FileNotFoundError:
-        print(f"⚠️ El archivo '{nombre_archivo}' no fue encontrado. Creándolo vacío...")
+        print(f" El archivo '{nombre_archivo}' no fue encontrado. Creándolo vacío...")
 
         return []
     except json.JSONDecodeError:
@@ -51,7 +52,8 @@ def gestion_datos():
     ║      Ingrese el nombre del país por ejemplo: Indonesia         ║
     ╚════════════════════════════════════════════════════════════════╝ 
                     """).capitalize()
-    
+    if nombre == (""):
+        return gestion_datos
     loading_animation("Cargando")
 
     codigo_iso =  input("""
@@ -59,6 +61,8 @@ def gestion_datos():
     ║             Ingrese el código ISO por ejemplo: ID              ║
     ╚════════════════════════════════════════════════════════════════╝
                         """).upper()
+    if codigo_iso == (""):
+        return gestion_datos
     
     loading_animation("Cargando")
 
@@ -67,6 +71,8 @@ def gestion_datos():
     ║             Ingrese el código ISO3 por ejemplo: IDN            ║
     ╚════════════════════════════════════════════════════════════════╝                      
                          """).upper()
+    if codigo_iso3 == (""):
+        return gestion_datos
     loading_animation("Cargando")
 
     if  nombre in paises:
@@ -99,8 +105,8 @@ def indicadores ():
     loading_animation("Cargando")
     if opc == "s":
         # Solicita datos al usuario y los guarda en el JSON.
-        datos = leer_json("indicadore.json")
-        agregar_nuevos_elementos_json("indicadore.json",new_dic)
+        datos = leer_json("indicadores.json")
+        agregar_nuevos_elementos_json("indicadores.json",new_dic)
 
         nuevo_indicador = {
             "id_indicador": input("Ingrese el ID del indicado, ejemplo: SP.POP.TOTL. ").upper(),
@@ -110,12 +116,12 @@ def indicadores ():
             print("El indicador ya está registrado.")
         else:
             datos.append(nuevo_indicador)
-            escribir_json("indicadore.json", datos)
+            escribir_json("indicadores.json", datos)
             print("Indicador agregado correctamente.")
     elif opc == "n":
         # Muestra todos los indicadores almacenados en el JSON.
         print("Mostrando indicadores existentes. :P ")
-        datos = leer_json("indicadore.json")
+        datos = leer_json("indicadores.json")
         if not datos:
             print("No hay indicadores registrados.")
         else:
@@ -167,11 +173,13 @@ def generar_informe():
             return []
 
     def guardar_json(nombre_archivo, datos):
+        loading_animation("Procesando...")
         """Guarda los datos en un archivo JSON."""
         with open(nombre_archivo, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, indent=4, ensure_ascii=False)
 
     def agregar_dato_poblacion():
+        loading_animation("Procesando...")
         """Permite agregar un nuevo dato de población al JSON."""
         datos = leer_json(NOMBRE_ARCHIVO2)
         loading_animation("Cargando")
@@ -194,7 +202,7 @@ def generar_informe():
 
         except ValueError:
             loading_animation("Cargando")
-            print("⚠️ Error: Ingrese valores numéricos en el año y la población.")
+            print("⚠️Error: Ingrese valores numéricos en el año y la población.")
     
     #Entrega una lista de los cambiso entre las fechas por los datos ingresados
     def generar_informe():
@@ -209,13 +217,14 @@ def generar_informe():
 
         pais = input("Ingrese el nombre del país: ").strip().capitalize()
         try:
-            loading_animation("Cargando")
+            loading_animation("Procesando...")
             anio_inicio = int(input("Ingrese el año de inicio: "))
+            loading_animation("Procesando...")
             anio_fin = int(input("Ingrese el año de fin: "))
 
             if anio_inicio > anio_fin:
                 loading_animation("Cargando")
-                print("⚠️ Error: El año de inicio no puede ser mayor que el año de fin.")
+                print(" Error: El año de inicio no puede ser mayor que el año de fin.")
                 return
 
             # Filtrar los datos según el país y el período de tiempo
@@ -233,10 +242,10 @@ def generar_informe():
                     print(f"Año: {dato['ano']}, Población: {dato['valor']} {dato['unidad']}")
             else:
                 loading_animation("Cargando")
-                print(f"⚠️ No se encontraron datos para {pais} en el período {anio_inicio}-{anio_fin}.")
+                print(f"No se encontraron datos para {pais} en el período {anio_inicio}-{anio_fin}.")
         except ValueError:
             loading_animation("Cargando")
-            print("⚠️ Error: Ingrese años válidos en formato numérico.")#) <- La filtracion se da hasta este punto si no hay mas datos esta no se llevara acabo marcando el error :)
+            print("Error: Ingrese años válidos en formato numérico.")#) <- La filtracion se da hasta este punto si no hay mas datos esta no se llevara acabo marcando el error :)
 
     if __name__ == "__main__":
         while True:
@@ -263,48 +272,15 @@ def generar_informe():
                 return menu()
             else:
                 loading_animation("¡¡Oye!!")
-                print("⚠️ Opción inválida. Intente de nuevo.")
+                print("Opción inválida. Intente de nuevo.")
 
 def modulo_reportes():
-    columnas = ['año', 'país', 'población', 'indicador']
-    print("Opciones disponibles para filtros:")
-    for i, columna in enumerate(columnas, 1):
-        print(f"{i}. {columna}")
-    
-    filtros_seleccionados = {}
-    
-    while True:
-        try:
-            num_filtros = int(input("¿Cuántos filtros deseas aplicar? (0-4): "))
-            if num_filtros < 0 or num_filtros > 4:
-                raise ValueError("Por favor, elige un número entre 0 y 4.")
-            break
-        except ValueError as e:
-            print(e)
-    
-    for i in range(num_filtros):
-        while True:
-            try:
-                filtro = int(input(f"Selecciona el filtro {i + 1} (1-4): "))
-                if filtro < 1 or filtro > 4:
-                    raise ValueError("Por favor, elige un número entre 1 y 4.")
-                filtro_nombre = columnas[filtro - 1]
-                if filtro_nombre in filtros_seleccionados:
-                    print(f"El filtro '{filtro_nombre}' ya ha sido seleccionado. Elige otro.")
-                    continue
-                valor = input(f"Introduce el valor para '{filtro_nombre}': ").strip()
-                if filtro_nombre in ['año', 'población']:
-                    valor = int(valor) if valor.isdigit() else None
-                    if valor is None:
-                        print("⚠️ Error: Debes ingresar un número para este filtro.")
-                        continue
-                filtros_seleccionados[filtro_nombre] = valor
-                break
-            except ValueError as e:
-                print(e)
-    
-    return filtros_seleccionados
+    loading_animation("Profe pongame un 70 por lo menos")
+    print("hola")
+    datos = leer_json("poblacion.json")
+    reporte = ingreso_de_datos(datos)
 
+   
 new_dic={}
 archivo = "Paises.json"
 opciones = {"1": gestion_datos, "2": interaccion_paises, "3": generar_informe, "4": modulo_reportes}
